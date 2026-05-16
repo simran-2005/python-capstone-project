@@ -1,6 +1,6 @@
 # ⚡ GitHub Portfolio & Issue Tracker
 
-A Flask web application for tracking GitHub repositories and managing open-source contribution plans. Built as the ENPM818Q capstone project at the University of Maryland.
+A Flask web application for tracking GitHub repositories and managing open-source contribution plans. 
 
 ---
 
