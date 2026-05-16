@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Stats — GitHub Tracker{% endblock %}
+
+{% block content %}
+<h2 style="color:#f0f6fc; margin-bottom:1.25rem;">Portfolio Stats</h2>
+
+{% if stats.repo_count == 0 %}
+    <p style="color:#8b949e;">Track some repos first to see stats.</p>
+{% else %}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; color:#f0f6fc;">{{ stats.repo_count }}</div>
+        <div style="color:#8b949e;">Tracked Repos</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; color:#f0f6fc;">{{ stats.total_stars }}</div>
+        <div style="color:#8b949e;">Total Stars ⭐</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:2rem; color:#f0f6fc;">{{ stats.total_open_issues }}</div>
+        <div style="color:#8b949e;">Open Issues 🐛</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:0.75rem;">Languages</h3>
+    {% for lang, count in stats.language_counts.items() | sort(attribute='1', reverse=True) %}
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+        <span style="width:120px; color:#c9d1d9;">{{ lang }}</span>
+        <div style="flex:1; background:#21262d; border-radius:4px; height:12px;">
+            <div style="width:{{ (count / stats.repo_count * 100)|int }}%;
+                        background:#388bfd; border-radius:4px; height:12px;"></div>
+        </div>
+        <span style="color:#8b949e; font-size:0.85em;">{{ count }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

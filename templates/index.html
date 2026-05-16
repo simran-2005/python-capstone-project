@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Login — GitHub Tracker{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto; text-align: center;">
+    <h1 style="color: #f0f6fc; margin-bottom: 0.5rem;">⚡ GitHub Tracker</h1>
+    <p style="color: #8b949e; margin-bottom: 2rem;">Track repos and plan contributions</p>
+
+    <form method="POST" action="{{ url_for('index') }}" style="display:flex; gap:0.5rem;">
+        <input type="text" name="username" placeholder="Enter a username to start"
+               autofocus autocomplete="off" required>
+        <button type="submit" style="white-space:nowrap;">Go →</button>
+    </form>
+    <p style="color:#8b949e; font-size:0.8em; margin-top:0.75rem;">No password needed.</p>
+</div>
+{% endblock %}

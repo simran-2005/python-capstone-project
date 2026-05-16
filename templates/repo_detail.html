@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ repo['owner'] }}/{{ repo['repo_name'] }} — GitHub Tracker{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.25rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+    <h2 style="color:#f0f6fc;">
+        <a href="{{ url_for('dashboard') }}" style="color:#8b949e;">← Dashboard</a>
+        &nbsp;/&nbsp;
+        {{ repo['owner'] }}/{{ repo['repo_name'] }}
+    </h2>
+    <form method="POST"
+          action="{{ url_for('refresh_repo', repo_id=repo['id']) }}"
+          style="margin-left:auto;">
+        <button type="submit">↻ Refresh metadata</button>
+    </form>
+</div>
+
+<!-- Repo metadata -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <div style="display:flex; gap:1.5rem; font-size:0.9em; flex-wrap:wrap; align-items:center;">
+        {% if repo['language'] %}
+            <span class="tag">{{ repo['language'] }}</span>
+        {% endif %}
+        {% if repo['stars'] is not none %}
+            <span>⭐ {{ repo['stars'] }} stars</span>
+        {% endif %}
+
+        <!-- Issue vs PR breakdown badge -->
+        {% if repo['open_prs_count'] is not none %}
+            {# We know the exact split — show both clearly #}
+            {% set true_issue_count = [repo['open_issues_count'] - repo['open_prs_count'], 0] | max %}
+            <span style="color:#3fb950;">🐛 {{ true_issue_count }} open issue{{ 's' if true_issue_count != 1 }}</span>
+            <span style="color:#a371f7;">⤴ {{ repo['open_prs_count'] }} open PR{{ 's' if repo['open_prs_count'] != 1 }}</span>
+        {% elif repo['open_issues_count'] is not none %}
+            {# PR count not yet known — show raw count with note #}
+            <span style="color:#8b949e;">🐛 {{ repo['open_issues_count'] }} open issues/PRs
+                <span style="font-size:0.75em;">(browse below to see split)</span>
+            </span>
+        {% endif %}
+    </div>
+
+    {% if repo['description'] %}
+        <p style="color:#8b949e; margin-top:0.5rem;">{{ repo['description'] }}</p>
+    {% endif %}
+
+    <p style="color:#484f58; font-size:0.8em; margin-top:0.5rem;">
+        Issues loaded from: <strong>{{ cache_source }}</strong>
+        &nbsp;|&nbsp; GitHub:
+        <a href="https://github.com/{{ repo['owner'] }}/{{ repo['repo_name'] }}"
+           target="_blank">↗ view on GitHub</a>
+    </p>
+</div>
+
+<!-- ── ISSUES SECTION ──────────────────────────────────────────────── -->
+<h3 style="color:#f0f6fc; margin-bottom:0.75rem;">
+    🐛 Open Issues
+    <span style="color:#8b949e; font-size:0.75em; font-weight:normal;">
+        ({{ issues|length }} shown, up to 30)
+    </span>
+</h3>
+
+{% if issues %}
+    {% for issue in issues %}
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+            <div>
+                <h3 style="font-size:0.95em;">
+                    <a href="{{ issue['html_url'] }}" target="_blank">
+                        #{{ issue['number'] }} {{ issue['title'] }}
+                    </a>
+                </h3>
+                <div style="margin-top:0.35rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                    {% for label in issue.get('labels', []) %}
+                        <span class="tag" style="background:#{{ label['color'] }}22;
+                              border-color:#{{ label['color'] }};">
+                            {{ label['name'] }}
+                        </span>
+                    {% endfor %}
+                    <span style="font-size:0.8em; color:#8b949e;">
+                        by {{ issue['user']['login'] }}
+                        · {{ issue['created_at'][:10] }}
+                    </span>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('save_issue') }}"
+                  style="display:flex; gap:0.4rem; align-items:center; flex-shrink:0;">
+                <input type="hidden" name="repo_id"      value="{{ repo['id'] }}">
+                <input type="hidden" name="issue_number" value="{{ issue['number'] }}">
+                <input type="hidden" name="title"        value="{{ issue['title'] }}">
+                <input type="hidden" name="url"          value="{{ issue['html_url'] }}">
+                <input type="text"   name="note"         placeholder="optional note"
+                       style="width:160px; font-size:0.85em;">
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#8b949e; margin-bottom:1.5rem;">No open issues found for this repo.</p>
+{% endif %}
+
+<!-- ── PULL REQUESTS SECTION ────────────────────────────────────────── -->
+<h3 style="color:#f0f6fc; margin-top:1.5rem; margin-bottom:0.75rem;">
+    ⤴ Open Pull Requests
+    <span style="color:#8b949e; font-size:0.75em; font-weight:normal;">
+        ({{ prs|length }} shown, up to 30)
+    </span>
+</h3>
+
+<div style="background:#1c1f26; border:1px solid #30363d; border-radius:6px;
+            padding:0.6rem 1rem; margin-bottom:0.75rem; font-size:0.8em; color:#8b949e;">
+    ℹ️ GitHub's "open issues count" includes pull requests. These are the
+    <strong style="color:#a371f7;">{{ prs|length }} PR{{ 's' if prs|length != 1 }}</strong>
+    counted in that number — they are <em>not</em> issues.
+</div>
+
+{% if prs %}
+    {% for pr in prs %}
+    <div class="card" style="border-color:#3d2f56;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+            <div>
+                <h3 style="font-size:0.95em;">
+                    <span style="color:#a371f7; font-size:0.85em; font-weight:600;">PR</span>
+                    &nbsp;
+                    <a href="{{ pr['html_url'] }}" target="_blank">
+                        #{{ pr['number'] }} {{ pr['title'] }}
+                    </a>
+                </h3>
+                <div style="margin-top:0.35rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                    {% for label in pr.get('labels', []) %}
+                        <span class="tag" style="background:#{{ label['color'] }}22;
+                              border-color:#{{ label['color'] }};">
+                            {{ label['name'] }}
+                        </span>
+                    {% endfor %}
+                    <span style="font-size:0.8em; color:#8b949e;">
+                        by {{ pr['user']['login'] }}
+                        · {{ pr['created_at'][:10] }}
+                    </span>
+                    <a href="{{ pr['html_url'] }}" target="_blank"
+                       style="font-size:0.8em; color:#a371f7;">↗ view PR</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#8b949e;">No open pull requests.</p>
+{% endif %}
+
+{% endblock %}

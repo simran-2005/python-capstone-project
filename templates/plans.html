@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Contribution Plans — GitHub Tracker{% endblock %}
+
+{% block content %}
+<h2 style="color:#f0f6fc; margin-bottom:1.25rem;">Contribution Plans</h2>
+
+<!-- Add plan form -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <h3 style="margin-bottom:0.75rem;">+ Add a Plan</h3>
+    {% if saved_issues %}
+    <form method="POST" action="{{ url_for('add_plan') }}"
+          style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <select name="issue_id" style="background:#0d1117; border:1px solid #30363d;
+                border-radius:6px; color:#c9d1d9; padding:0.4rem 0.75rem; flex:1; min-width:200px;">
+            <option value="">— Select a saved issue —</option>
+            {% for issue in saved_issues %}
+            <option value="{{ issue['id'] }}">
+                {{ issue['owner'] }}/{{ issue['repo_name'] }} #{{ issue['issue_number'] }}: {{ issue['title'][:50] }}
+            </option>
+            {% endfor %}
+        </select>
+        <input type="date" name="target_date" style="width:160px;">
+        <input type="text" name="note" placeholder="note (optional)" style="width:200px;">
+        <button type="submit">Add Plan →</button>
+    </form>
+    {% else %}
+        <p style="color:#8b949e;">Save some issues first before adding plans.</p>
+    {% endif %}
+</div>
+
+<!-- Plans list -->
+{% if plans %}
+    {% for plan in plans %}
+    <div class="card {% if plan['status'] == 'done' %}done{% endif %}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+            <div>
+                <h3 style="font-size:0.95em;">
+                    <a href="{{ plan['issue_url'] }}" target="_blank">
+                        {{ plan['owner'] }}/{{ plan['repo_name'] }} #{{ plan['issue_number'] }}
+                    </a>
+                </h3>
+                <p style="color:#c9d1d9; margin:0.2rem 0;">{{ plan['issue_title'] }}</p>
+                <div style="font-size:0.85em; display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.25rem;">
+                    {% if plan['target_date'] %}
+                        <span class="{% if plan['is_overdue'] and plan['status'] == 'open' %}overdue{% endif %}">
+                            🗓 {{ plan['target_date'] }}
+                            {% if plan['is_overdue'] and plan['status'] == 'open' %} (overdue!){% endif %}
+                        </span>
+                    {% endif %}
+                    {% if plan['note'] %}
+                        <span style="color:#8b949e;">📝 {{ plan['note'] }}</span>
+                    {% endif %}
+                    <span class="tag">{{ plan['status'] }}</span>
+                </div>
+            </div>
+
+            {% if plan['status'] == 'open' %}
+            <form method="POST" action="{{ url_for('mark_plan_done', plan_id=plan['id']) }}">
+                <button type="submit" style="color:#2ea043; border-color:#2ea043;">✓ Done</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#8b949e;">No plans yet.</p>
+{% endif %}
+{% endblock %}

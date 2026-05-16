@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GitHub Tracker{% endblock %}</title>
+    <style>
+        /* Minimal functional styles — swap for Bootstrap/Tailwind if you want */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 1rem; }
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        nav { border-bottom: 1px solid #30363d; padding-bottom: 0.75rem; margin-bottom: 1.5rem;
+              display: flex; gap: 1.5rem; align-items: center; }
+        nav strong { color: #f0f6fc; }
+        .flash { padding: 0.5rem 1rem; margin-bottom: 1rem; border-radius: 4px; }
+        .flash.success { background: #1a4731; border: 1px solid #2ea043; }
+        .flash.error   { background: #4a1c1c; border: 1px solid #f85149; }
+        .flash.info    { background: #1c2b3a; border: 1px solid #388bfd; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+                padding: 1rem; margin-bottom: 0.75rem; }
+        .card h3 { color: #f0f6fc; margin-bottom: 0.5rem; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 12px;
+               font-size: 0.8em; background: #21262d; border: 1px solid #30363d; }
+        button, .btn {
+            cursor: pointer; padding: 0.4rem 1rem; border-radius: 6px;
+            border: 1px solid #30363d; background: #21262d; color: #c9d1d9;
+            font-size: 0.9em;
+        }
+        button:hover, .btn:hover { background: #30363d; }
+        input[type="text"], input[type="date"], textarea {
+            background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+            color: #c9d1d9; padding: 0.4rem 0.75rem; width: 100%;
+        }
+        .overdue { color: #f85149; }
+        .done    { opacity: 0.5; text-decoration: line-through; }
+    </style>
+</head>
+<body>
+
+{% if session.username %}
+<nav>
+    <strong>⚡ GitHub Tracker</strong>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('saved_issues') }}">Saved Issues</a>
+    <a href="{{ url_for('stats') }}">Stats</a>
+    <a href="{{ url_for('plans') }}">Plans</a>
+    <span style="margin-left:auto; color:#8b949e">{{ session.username }}</span>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+{% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

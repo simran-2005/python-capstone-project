@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Saved Issues — GitHub Tracker{% endblock %}
+
+{% block content %}
+<h2 style="color:#f0f6fc; margin-bottom:1.25rem;">
+    Saved Issues
+    <span style="color:#8b949e; font-size:0.7em; font-weight:normal;">({{ issues|length }})</span>
+</h2>
+
+{% if issues %}
+    {% for issue in issues %}
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <h3 style="font-size:0.95em;">
+                    <a href="{{ issue['url'] }}" target="_blank">
+                        {{ issue['owner'] }}/{{ issue['repo_name'] }} #{{ issue['issue_number'] }}
+                    </a>
+                </h3>
+                <p style="color:#c9d1d9; margin:0.25rem 0;">{{ issue['title'] }}</p>
+                {% if issue['note'] %}
+                    <p style="color:#8b949e; font-size:0.85em;">📝 {{ issue['note'] }}</p>
+                {% endif %}
+                <p style="color:#484f58; font-size:0.8em;">saved {{ issue['saved_at'][:10] }}</p>
+            </div>
+            <form method="POST"
+                  action="{{ url_for('delete_issue', issue_id=issue['id']) }}">
+                <button type="submit" style="color:#f85149; border-color:#f85149;">✕</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#8b949e;">No saved issues yet. Browse a repo and hit Save on an issue.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — GitHub Tracker{% endblock %}
+
+{% block content %}
+<h2 style="color:#f0f6fc; margin-bottom:1.25rem;">
+    {{ user['username'] }}'s Tracked Repos
+    <span style="color:#8b949e; font-size:0.7em; font-weight:normal;">({{ repos|length }})</span>
+</h2>
+
+<!-- Add repo form -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <h3 style="margin-bottom:0.75rem;">+ Track a New Repo</h3>
+    <form method="POST" action="{{ url_for('add_repo') }}"
+          style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <input type="text" name="owner"     placeholder="owner (e.g. torvalds)"
+               style="width:200px;" required autocomplete="off">
+        <input type="text" name="repo_name" placeholder="repo (e.g. linux)"
+               style="width:200px;" required autocomplete="off">
+        <button type="submit">Track →</button>
+    </form>
+</div>
+
+<!-- Repo cards -->
+{% if repos %}
+    {% for repo in repos %}
+    <div class="card">
+        <h3>
+            <a href="{{ url_for('repo_detail', repo_id=repo['id']) }}">
+                {{ repo['owner'] }}/{{ repo['repo_name'] }}
+            </a>
+        </h3>
+
+        {% if repo['description'] %}
+            <p style="color:#8b949e; margin: 0.25rem 0 0.5rem 0; font-size:0.9em;">
+                {{ repo['description'] }}
+            </p>
+        {% endif %}
+
+        <div style="display:flex; gap:1rem; font-size:0.85em; color:#8b949e; flex-wrap:wrap; align-items:center;">
+            {% if repo['language'] %}
+                <span class="tag">{{ repo['language'] }}</span>
+            {% endif %}
+            {% if repo['stars'] is not none %}
+                <span>⭐ {{ repo['stars'] }}</span>
+            {% endif %}
+
+            <!-- Issue / PR split display -->
+            {% if repo['open_prs_count'] is not none %}
+                {# We know the exact breakdown — show both #}
+                {% set true_issues = [repo['open_issues_count'] - repo['open_prs_count'], 0] | max %}
+                <span style="color:#3fb950;">🐛 {{ true_issues }} issue{{ 's' if true_issues != 1 }}</span>
+                <span style="color:#a371f7;">⤴ {{ repo['open_prs_count'] }} PR{{ 's' if repo['open_prs_count'] != 1 }}</span>
+            {% elif repo['open_issues_count'] is not none %}
+                {# PR split not yet known — show raw with tooltip note #}
+                <span title="GitHub counts issues + PRs together. Browse the repo to see the split.">
+                    🐛 {{ repo['open_issues_count'] }} issues/PRs
+                    <span style="font-size:0.75em; color:#484f58;">(incl. PRs)</span>
+                </span>
+            {% endif %}
+
+            {% if repo['fetched_at'] %}
+                <span style="margin-left:auto; color:#484f58;">cached {{ repo['fetched_at'][:10] }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
+            <a href="{{ url_for('repo_detail', repo_id=repo['id']) }}" class="btn">
+                View Issues & PRs
+            </a>
+            <form method="POST"
+                  action="{{ url_for('refresh_repo', repo_id=repo['id']) }}"
+                  style="display:inline;">
+                <button type="submit">↻ Refresh</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#8b949e;">No repos tracked yet. Add one above.</p>
+{% endif %}
+{% endblock %}
