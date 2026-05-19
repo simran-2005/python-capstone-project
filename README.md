@@ -8,7 +8,7 @@ A Flask web application for tracking GitHub repositories and managing open-sourc
 
 Developers who follow multiple open-source repositories have no lightweight way to track interesting issues, plan contributions, or see a portfolio-level summary across everything they watch. GitHub's own interface is repo-centric — there is no personal cross-repo dashboard.
 
-This app solves that. You add any public GitHub repository by owner and name, and it becomes part of your personal tracker. You can browse its open issues, save the ones you want to contribute to with your own notes, set target dates, and see when you are overdue. A stats page aggregates language distributions and star counts across everything you track.
+This app tries to solve that. You add any public GitHub repository by owner and name, and it becomes part of your personal tracker. You can browse its open issues, save the ones you want to contribute to with your own notes, set target dates, and see when you are overdue. A stats page aggregates language distributions and star counts across everything you track.
 
 The app also demonstrates a two-database architecture: SQLite for structured relational data and MongoDB Atlas for raw API response caching — reducing GitHub API calls and showing cloud database integration in a real context.
 
@@ -196,7 +196,7 @@ This creates `github_tracker.db` with all five tables. Safe to run on a fresh da
 flask --app app run --debug
 ```
 
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in the browser.
 
 ### Resetting the database
 
@@ -205,7 +205,7 @@ rm github_tracker.db
 python init_db.py
 ```
 
-To also clear the MongoDB cache (e.g. after schema changes):
+To also clear the MongoDB cache:
 
 ```python
 # python clear_mongo_cache.py
@@ -253,7 +253,7 @@ print("Mongo cache cleared.")
 
 **Stats** — Summary tiles (repos tracked, total stars, total open issues, total open PRs) and a language bar chart built from CSS width percentages.
 
-**Contribution Plans** — A form to attach a plan to any saved issue with a target date. Plans past their target date are highlighted in red as overdue. Done plans grey out with strikethrough.
+**Contribution Plans** — A form to attach a plan to any saved issue with a target date. Plans past their target date are highlighted in red as overdue. Completed plans grey out with strikethrough.
 
 ---
 
